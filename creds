@@ -88,15 +88,6 @@ check_deps() {
   fi
 }
 
-
-list_creds() {
-  local cred_name
-  for i in "$CREDS_DIR"/*.gpg; do
-    cred_name=$(basename "$i" .gpg)
-    echo "$cred_name"
-  done
-}
-
 check_credfile() {
   local cred_name="$1"
   echo_stderr "Looking for credentials '$cred_name'"
@@ -118,8 +109,10 @@ encrypt_file() {
 ## subcommands
 cmd_list() {
   echo "Credential storage dir: $CREDS_DIR"
-  for store in $(list_creds); do
-    echo "- $store"
+  for i in "$CREDS_DIR"/*.gpg; do
+    [ ! -f "$i" ] && continue
+    cred_name=$(basename "$i" .gpg)
+    echo "- $cred_name"
   done
 }
 

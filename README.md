@@ -98,7 +98,11 @@ Optional variables:
 
 ### Creating a new credential store / Editing existing credential store
 
-The `edit` command will create a new credential store if one does not exist yet:
+The `edit` command will create a new credential store if one does not exist yet.
+
+The format of credential stores is single line `KEY=val` environment variable
+style lines. All other lines will be ignored when using the `set` and `unset`
+commands.
 
 ```
 $ creds edit aws-work
@@ -107,9 +111,19 @@ $ creds edit aws-work
 FOO=bar
 ```
 
+### Listing credential stores
+
+```
+$ creds list
+Credential storage dir: /Users/joe/Dropbox/creds
+- aws-work
+- misc.txt
+- digitalocean
+```
+
 ### Setting/Loading
 
-Use the `set` subcommand to print the contents of a credential store.
+Use the `set` command to print the contents of a credential store.
 
 Usually you will wrap this with `eval` to set the credentials in your shell's
 environment.
@@ -123,12 +137,8 @@ bar
 
 ### Unsetting
 
-Use the `set` subcommand to unset the credentials. This should also be used
+Use the `set` command to unset the credentials. This should also be used
 with `eval`.
-
-NOTE: There is no strict limitation on the format of a credential store,
-however only lines that fit the pattern `KEY=val` will be considered when
-using the `unset` command.
 
 ```
 $ echo $FOO
