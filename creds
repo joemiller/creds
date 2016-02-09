@@ -1,0 +1,231 @@
+#!/bin/bash
+
+VERSION=0.0.1
+
+## help constants
+USAGE="usage: creds [-h|--help] [-v|--version] <subcommand> [arguments]
+
+Simple encrypted credential file management with GPG.
+
+The most commonly used subcommands are:
+
+  list                  list available credential stores
+  edit                  edit a credential store
+  import                import an existing file into a new credential store
+  set                   display commands to set credentials from a credential store
+  unset                 display commands to unset credentials from a credential store
+
+"
+
+EDIT_USAGE="usage: creds edit [creds-store]
+
+edit a credential store
+"
+
+IMPORT_USAGE="usage: creds import [path]
+
+import an existing file into a new credential store
+"
+
+SET_USAGE="usage: creds set [creds-store]
+
+display commands to set credentials from a credential store
+"
+
+UNSET_USAGE="usage: creds unset [creds-store]
+
+display commands to unset credentials from a credential store
+"
+
+## helpers
+echo_stderr() { echo "$@" 1>&2; }
+command_exists() { type -P "$1" >/dev/null; }
+die() { exit 1; }
+usage() { echo_stderr "$USAGE"; die; }
+
+load_config_file() {
+  if [ -r "$HOME/.credsrc" ]; then
+    # shellcheck source=/dev/null
+    source "$HOME/.credsrc"
+  fi
+}
+
+check_config() {
+  local valid_config=1
+  [ -z "$CREDS_DIR" ] && { echo_stderr "Missing config var CREDS_DIR."; valid_config=0; }
+  [ -z "$GPG_KEY" ]   && { echo_stderr "Missing config var GPG_KEY."; valid_config=0; }
+
+  if [ "$valid_config" -eq "0" ]; then
+    echo_stderr "Create a ~/.credsrc file with the missing config vars."
+    die
+  fi
+}
+
+check_gpg() {
+  # if GPG_BIN is set in env or config file, verify it exists, else try to find the gpg binary, favoring
+  # gpg2 if present.
+  if command_exists "$GPG_BIN"; then
+    GPG_BIN="$GPG_BIN"
+  elif command_exists "gpg2"; then
+    GPG_BIN="gpg2"
+  elif command_exists "gpg"; then
+    GPG_BIN="gpg"
+  else
+    echo_stderr "Unable to find 'gpg' or 'gpg2' command. Install gpg somehere in \$PATH or set GPG_BIN in ~/.credsrc"
+    die
+  fi
+}
+
+check_deps() {
+  check_gpg
+
+  if [ ! -d "$CREDS_DIR" ]; then
+    echo_stderr "CREDS_DIR '$CREDS_DIR' does not exist. Please create this directory."
+    die
+  fi
+  if ! $GPG_BIN --quiet --batch -K "$GPG_KEY" >/dev/null 2>&1; then
+    echo_stderr "GPG_KEY '$GPG_KEY' does not exist."
+    die
+  fi
+}
+
+
+list_creds() {
+  local cred_name
+  for i in "$CREDS_DIR"/*.gpg; do
+    cred_name=$(basename "$i" .gpg)
+    echo "$cred_name"
+  done
+}
+
+check_credfile() {
+  local cred_name="$1"
+  echo_stderr "Looking for credentials '$cred_name'"
+  local credfile="$CREDS_DIR/$cred_name.gpg"
+  if [ ! -f "$credfile" ]; then
+    echo_stderr "Unable to find '$credfile'"
+    die
+  fi
+  echo_stderr "Found: $credfile"
+  echo "$credfile"  # return
+}
+
+encrypt_file() {
+  local infile="$1"
+  local outfile="$2"
+  $GPG_BIN -e --batch --yes --quiet -a -r "$GPG_KEY" -o "$outfile" < "$infile"
+}
+
+## subcommands
+cmd_list() {
+  echo "Credential storage dir: $CREDS_DIR"
+  for store in $(list_creds); do
+    echo "- $store"
+  done
+}
+
+cmd_set() {
+  cred_name="$1"
+  [ -z "$cred_name" ] && { echo_stderr "$SET_USAGE"; die; }
+
+  credfile=$(check_credfile "$cred_name")
+  $GPG_BIN -d --quiet < "$credfile" | while read -r line ; do
+    if [[ "$line" =~ ^[^[:space:]]+= ]]; then
+      echo "$line"
+    fi
+  done
+}
+
+cmd_unset() {
+  cred_name="$1"
+  [ -z "$cred_name" ] && { echo_stderr "$UNSET_USAGE"; die; }
+
+  credfile=$(check_credfile "$cred_name")
+  $GPG_BIN -d --quiet < "$credfile" | while read -r line ; do
+    if [[ "$line" =~ ^[^[:space:]]+= ]]; then
+      env_var=$(awk -F= '{print $1}' <<<"$line")
+      echo "unset $env_var"
+    fi
+  done
+}
+
+cmd_edit() {
+  cred_name="$1"
+  [ -z "$cred_name" ] && { echo_stderr "$EDIT_USAGE"; die; }
+
+  credfile="$CREDS_DIR/$cred_name.gpg"
+  tmpfile=$(mktemp "tmp-$cred_name.XXXXXXXX") || die
+  if [ -f "$credfile" ]; then
+    $GPG_BIN -d --quiet < "$credfile"  >"$tmpfile"
+  else
+    echo "Unable to find '$credfile'. Creating new file."
+  fi
+
+  orig_cksum=$(cksum "$tmpfile")
+  $EDITOR "$tmpfile"
+  new_cksum=$(cksum "$tmpfile")
+  if [ "$orig_cksum" != "$new_cksum" ]; then
+    echo "Encrypting..."
+    encrypt_file "$tmpfile" "$credfile"
+    if [ $? != 0 ]; then
+      echo_stderr "Encryption failed. Changes not committed."
+      rm -f -- "$tmpfile"
+      die
+    fi
+  else
+    echo "Unchanged."
+  fi
+  rm -f -- "$tmpfile"
+}
+
+cmd_import() {
+  unencrypted_file="$1"
+  [ -z "$unencrypted_file" ] && { echo_stderr "$IMPORT_USAGE"; die; }
+
+  credfile=$(printf "%s/%s.gpg" "$CREDS_DIR" "$(basename "$unencrypted_file")")
+  if [ ! -e "$unencrypted_file" ]; then
+    echo_stderr "File does not exist: '$unencrypted_file'"
+    die
+  fi
+  if [ -e "$credfile" ]; then
+    echo_stderr "Credential store '$credfile' already exists."
+    die
+  fi
+  echo "Encrypting '$unencrypted_file' to '$credfile'"
+  encrypt_file "$unencrypted_file" "$credfile"
+}
+
+## main
+if [ "$#" -eq 0 ]; then
+  usage
+fi
+
+subcommand="$1"
+shift
+case "$subcommand" in
+  -h|--help)
+    usage ;;
+  -v|--version)
+    echo $VERSION
+    exit ;;
+esac
+
+load_config_file
+check_config
+check_deps
+
+case "$subcommand" in
+  list)
+    cmd_list "$@" ;;
+  set)
+    cmd_set "$@" ;;
+  unset)
+    cmd_unset "$@" ;;
+  edit)
+    cmd_edit "$@" ;;
+  import)
+    cmd_import "$@" ;;
+  *)
+    echo "error: invalid argument or subcommand: $subcommand"
+    usage ;;
+esac
