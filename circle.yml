@@ -1,0 +1,9 @@
+dependencies:
+  cache_directories:
+    - "~/deps"
+  pre:
+    - make circle_deps
+
+test:
+  override:
+    - make test

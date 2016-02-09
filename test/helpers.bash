@@ -24,7 +24,7 @@ make_gpg_key() {
   rm -rf -- "${GNUPGHOME:?}/"*
   # remove /dev/null redirection if you suspect errors during gpg key creation when
   # the tests are run, otherwise it clutters the output of the commands under test.
-  out=$(gpg2 --batch --quiet --gen-key ./test/gpg-keygen.conf 2>&1)
+  out=$(gpg2 --batch --quiet --gen-key --debug-quick-random ./test/gpg-keygen.conf 2>&1)
   if [ $? -gt 0 ]; then
     echo "gpg2 returned error:"
     echo "$out"
