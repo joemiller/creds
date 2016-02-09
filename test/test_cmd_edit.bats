@@ -15,7 +15,6 @@ setup() {
   run create_creds "new-creds" "KEY=val"
   echo "$output"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"Looking for credentials"* ]]
   [[ "$output" == *"Creating new file."* ]]
   [[ "$output" == *"Encrypting..."* ]]
 }
