@@ -129,6 +129,9 @@ Usually you will wrap this with `eval` to set the credentials in your shell's
 environment.
 
 ```
+$ creds set aws-work
+FOO=bar
+
 $ eval $(creds set aws-work)
 
 $ echo $FOO
@@ -137,12 +140,15 @@ bar
 
 ### Unsetting
 
-Use the `set` command to unset the credentials. This should also be used
+Use the `unset` command to unset the credentials. This should also be used
 with `eval`.
 
 ```
 $ echo $FOO
 bar
+
+$ creds unset aws-work
+unset FOO
 
 $ eval $(creds unset aws-work)
 $ echo $FOO
@@ -167,6 +173,7 @@ Run `make test` to run the test suite. You will need `bats` installed.
 TODO
 ----
 
+- the output may be too verbose, such as the two header lines in set and unset
 - maybe make it work with the `keybase` commands too? but don't introduce a
   dependency on keybase.
 - Rewrite in go, optionally using gpg library? Unlikely as this is intended to

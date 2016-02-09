@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.0.1
+VERSION=0.0.2
 
 ## help constants
 USAGE="usage: creds [-h|--help] [-v|--version] <subcommand> [arguments]
@@ -90,13 +90,11 @@ check_deps() {
 
 check_credfile() {
   local cred_name="$1"
-  echo_stderr "Looking for credentials '$cred_name'"
   local credfile="$CREDS_DIR/$cred_name.gpg"
   if [ ! -f "$credfile" ]; then
     echo_stderr "Unable to find '$credfile'"
     die
   fi
-  echo_stderr "Found: $credfile"
   echo "$credfile"  # return
 }
 
@@ -121,6 +119,8 @@ cmd_set() {
   [ -z "$cred_name" ] && { echo_stderr "$SET_USAGE"; die; }
 
   credfile=$(check_credfile "$cred_name")
+  [ -z "$credfile" ] && die
+
   $GPG_BIN -d --quiet < "$credfile" | while read -r line ; do
     if [[ "$line" =~ ^[^[:space:]]+= ]]; then
       echo "$line"
@@ -133,6 +133,8 @@ cmd_unset() {
   [ -z "$cred_name" ] && { echo_stderr "$UNSET_USAGE"; die; }
 
   credfile=$(check_credfile "$cred_name")
+  [ -z "$credfile" ] && die
+
   $GPG_BIN -d --quiet < "$credfile" | while read -r line ; do
     if [[ "$line" =~ ^[^[:space:]]+= ]]; then
       env_var=$(awk -F= '{print $1}' <<<"$line")
