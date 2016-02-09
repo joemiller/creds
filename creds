@@ -14,7 +14,6 @@ The most commonly used subcommands are:
   import                import an existing file into a new credential store
   set                   display commands to set credentials from a credential store
   unset                 display commands to unset credentials from a credential store
-
 "
 
 EDIT_USAGE="usage: creds edit [creds-store]

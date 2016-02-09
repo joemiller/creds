@@ -40,7 +40,14 @@ Install
 Clone this repo from github, run `make install` to copy `creds` to
 `/usr/local/bin`.
 
-Or, just copy `creds` anywhere you like in your `$PATH`.
+Or, install `creds` to somewhere in your `$PATH`.
+
+Or, curl install!
+
+```
+$ curl https://raw.githubusercontent.com/joemiller/creds/master/creds >./creds
+$ chmod +x ./creds
+```
 
 If you're on OSX you may need to install GPG and create a keypair.  You have
 a few options:
@@ -142,10 +149,14 @@ $ creds import ./circleci.keys
 Encrypting './circleci.keys' to '/Users/joe/Dropbox/creds/circleci.keys.gpg'
 ```
 
+Developing
+----------
+
+Run `make test` to run the test suite. You will need `bats` installed.
+
 TODO
 ----
 
-- um, write some tests!!!!!!
 - maybe make it work with the `keybase` commands too? but don't introduce a
   dependency on keybase.
 - Rewrite in go, optionally using gpg library? Unlikely as this is intended to
