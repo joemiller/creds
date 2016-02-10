@@ -21,7 +21,7 @@ foo
 $ s3cmd ...
 ```
 
-But I don't like storing these in plaintext.
+But I don't like storing these in plaintext on Dropbox.
 
 Thus, how about a simple way to encrypt/decrypt these as needed with GPG?
 
@@ -55,6 +55,8 @@ a few options:
 - Homebrew: `brew install gpg2 gpg-agent`
 - Install GPG Suite from https://gpgtools.org/
 
+Run `gpg2 --gen-key` to generate a new keypair if you don't already have one.
+
 Uninstall
 ---------
 
@@ -84,12 +86,14 @@ The most commonly used subcommands are:
 
 ```
 CREDS_DIR="$HOME/Dropbox/creds"
+GPG_KEY=joeym@joeym.net
 ```
 
 Required variables:
 
 - `CREDS_DIR`: A directory where encrypted credentials files will be stored.
-- `GPG_KEY`: A GPG key ID in your keychain. Use `gpg -K` to list keys.
+- `GPG_KEY`: The GPG key to use for encrypting credentials. Use `gpg -K` to
+             list keys.
 
 Optional variables:
 
@@ -108,7 +112,8 @@ commands.
 $ creds edit aws-work
 
 < .. $EDITOR launches .. >
-FOO=bar
+AWS_ACCESS_KEY_ID=foo
+AWS_SECRET_ACCESS_KEY=bar
 ```
 
 ### Listing credential stores
@@ -117,7 +122,7 @@ FOO=bar
 $ creds list
 Credential storage dir: /Users/joe/Dropbox/creds
 - aws-work
-- misc.txt
+- misc
 - digitalocean
 ```
 
@@ -130,12 +135,13 @@ environment.
 
 ```
 $ creds set aws-work
-FOO=bar
+AWS_ACCESS_KEY_ID=foo
+AWS_SECRET_ACCESS_KEY=bar
 
 $ eval $(creds set aws-work)
 
-$ echo $FOO
-bar
+$ echo $AWS_ACCESS_KEY_ID
+foo
 ```
 
 ### Unsetting
@@ -144,15 +150,10 @@ Use the `unset` command to unset the credentials. This should also be used
 with `eval`.
 
 ```
-$ echo $FOO
-bar
-
 $ creds unset aws-work
-unset FOO
+unset AWS_ACCESS_KEY_ID
 
 $ eval $(creds unset aws-work)
-$ echo $FOO
-$
 ```
 
 ### Importing an existing plaintext file
@@ -173,12 +174,11 @@ Run `make test` to run the test suite. You will need `bats` installed.
 TODO
 ----
 
-- the output may be too verbose, such as the two header lines in set and unset
 - maybe make it work with the `keybase` commands too? but don't introduce a
   dependency on keybase.
 - Rewrite in go, optionally using gpg library? Unlikely as this is intended to
   be a simple tool and already has very few external dependencies (only bash
-  3.2+ and gpg)
+  3.2+ and gpg) but it would be a fun rewrite.
 
 Author
 ------
