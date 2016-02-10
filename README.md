@@ -1,6 +1,8 @@
 creds
 =====
 
+[![Circle CI](https://circleci.com/gh/joemiller/creds.svg?style=svg)](https://circleci.com/gh/joemiller/creds)
+
 Simple encrypted credential file management with GPG.
 
 Rationale
@@ -18,6 +20,7 @@ AWS_SECRET_ACCESS_KEY=bar
 $ source ~/Dropbox/creds/aws-work.sh
 $ echo $AWS_ACCESS_KEY_ID
 foo
+
 $ s3cmd ...
 ```
 
@@ -29,7 +32,7 @@ Requirements
 ------------
 
 - bash >= 3.2
-- gpg (tested with 2.0.x but might work with 1.4.x)
+- gpg (tested with 2.0 and 2.1 but might work with 1.4)
 
 Tested on Mac OSX 10.11 with `gpg2` installed from homebrew, but should work
 on most platforms with the above requirements.
