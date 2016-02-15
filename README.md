@@ -14,8 +14,8 @@ set environment variables when needed, eg:
 
 ```
 $ cat ~/Dropbox/creds/aws-work.sh
-AWS_ACCESS_KEY_ID=foo
-AWS_SECRET_ACCESS_KEY=bar
+export AWS_ACCESS_KEY_ID=foo
+export AWS_SECRET_ACCESS_KEY=bar
 
 $ source ~/Dropbox/creds/aws-work.sh
 $ echo $AWS_ACCESS_KEY_ID
@@ -138,8 +138,8 @@ environment.
 
 ```
 $ creds set aws-work
-AWS_ACCESS_KEY_ID=foo
-AWS_SECRET_ACCESS_KEY=bar
+export AWS_ACCESS_KEY_ID=foo
+export AWS_SECRET_ACCESS_KEY=bar
 
 $ eval $(creds set aws-work)
 
@@ -177,6 +177,7 @@ Run `make test` to run the test suite. You will need `bats` installed.
 TODO
 ----
 
+- completion helpers for bash and zsh
 - maybe make it work with the `keybase` commands too? but don't introduce a
   dependency on keybase.
 - Rewrite in go, optionally using gpg library? Unlikely as this is intended to
