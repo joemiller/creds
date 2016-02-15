@@ -1,3 +1,6 @@
+# vim: set ft=sh:
+# -*- mode: sh -*-
+
 load helpers
 
 setup() {
@@ -17,5 +20,5 @@ setup() {
 
   run $CREDS set "test-creds"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"KEY=val"* ]]
+  [[ "$output" == *"export KEY=val"* ]]
 }

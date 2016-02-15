@@ -1,3 +1,6 @@
+# vim: set ft=sh:
+# -*- mode: sh -*-
+
 load helpers
 
 setup() {
