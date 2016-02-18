@@ -1,3 +1,7 @@
+## 0.0.3 (February 18, 2016)
+
+  * Added bash and zsh completion helpers
+
 ## 0.0.2 (October 5, 2015)
 
 IMPROVEMENTS:
