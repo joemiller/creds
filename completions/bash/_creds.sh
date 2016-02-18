@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# Bash completion helpers for `creds` util: https://github.com/joemiller/creds
 
 _creds_list_cred_stores() {
   creds list | awk '/^-/ { print $NF}'

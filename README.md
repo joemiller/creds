@@ -40,12 +40,28 @@ on most platforms with the above requirements.
 Install
 -------
 
-Clone this repo from github, run `make install` to copy `creds` to
-`/usr/local/bin`.
+Several options for installation, in order of recommendation:
 
-Or, install `creds` to somewhere in your `$PATH`.
+- Using homebrew, install latest tagged release:
 
-Or, curl install!
+```
+$ brew install joemiller/taps/creds
+```
+
+- Using homebrew, install master branch:
+
+```
+$ brew install joemiller/taps/creds --HEAD
+```
+
+- Or, clone and run `make install`:
+
+```
+$ git clone https://github.com/joemiller/creds.git
+$ cd creds ; make install
+```
+
+- Or, curl install!
 
 ```
 $ curl https://raw.githubusercontent.com/joemiller/creds/master/creds >./creds
@@ -63,7 +79,8 @@ Run `gpg2 --gen-key` to generate a new keypair if you don't already have one.
 Uninstall
 ---------
 
-Run `make uninstall`
+- If installed via homebrew: `brew uninstall creds`
+- If installed from `make install`: Run `make uninstall`
 
 Usage
 -----
