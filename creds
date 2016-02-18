@@ -9,11 +9,11 @@ Simple encrypted credential file management with GPG.
 
 The most commonly used subcommands are:
 
-  list                  list available credential stores
-  edit                  edit a credential store
-  import                import an existing file into a new credential store
-  set                   display commands to set credentials from a credential store
-  unset                 display commands to unset credentials from a credential store
+  list                  List available credential stores
+  edit                  Edit a credential store
+  import                Import an existing file into a new credential store
+  set                   Display commands to set credentials from a credential store
+  unset                 Display commands to unset credentials from a credential store
 "
 
 EDIT_USAGE="usage: creds edit [creds-store]
