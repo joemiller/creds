@@ -186,15 +186,19 @@ $ creds import ./circleci.keys
 Encrypting './circleci.keys' to '/Users/joe/Dropbox/creds/circleci.keys.gpg'
 ```
 
-Developing
-----------
+Developing & Testing
+--------------------
 
-Run `make test` to run the test suite. You will need `bats` installed.
+Requirements:
+
+- `bats` - (`brew install bats`)
+- `shellcheck` - (`brew install shellcheck`)
+
+Run `make test` to run the test suite.
 
 TODO
 ----
 
-- completion helpers for bash and zsh
 - maybe make it work with the `keybase` commands too? but don't introduce a
   dependency on keybase.
 - Rewrite in go, optionally using gpg library? Unlikely as this is intended to
