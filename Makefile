@@ -1,6 +1,9 @@
 all: install
 
-test:
+test_static:
+	shellcheck ./creds
+
+test: test_static
 	bats ./test
 
 install:
