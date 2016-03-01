@@ -194,7 +194,8 @@ Requirements:
 - `bats` - (`brew install bats`)
 - `shellcheck` - (`brew install shellcheck`)
 
-Run `make test` to run the test suite.
+
+Run `make help` to get a list of tasks.
 
 TODO
 ----
