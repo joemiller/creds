@@ -121,7 +121,7 @@ cmd_set() {
   credfile=$(check_credfile "$cred_name")
   [ -z "$credfile" ] && die
 
-  $GPG_BIN -d --quiet < "$credfile" | while read -r line ; do
+  $GPG_BIN -d --no-tty --quiet < "$credfile" | while read -r line ; do
     if [[ "$line" =~ ^[^[:space:]]+= ]]; then
       echo "export $line"
     fi
@@ -135,7 +135,7 @@ cmd_unset() {
   credfile=$(check_credfile "$cred_name")
   [ -z "$credfile" ] && die
 
-  $GPG_BIN -d --quiet < "$credfile" | while read -r line ; do
+  $GPG_BIN -d --no-tty --quiet < "$credfile" | while read -r line ; do
     if [[ "$line" =~ ^[^[:space:]]+= ]]; then
       env_var=$(awk -F= '{print $1}' <<<"$line")
       echo "unset $env_var"
@@ -150,7 +150,7 @@ cmd_edit() {
   credfile="$CREDS_DIR/$cred_name.gpg"
   tmpfile=$(mktemp "tmp-$cred_name.XXXXXXXX") || die
   if [ -f "$credfile" ]; then
-    $GPG_BIN -d --quiet < "$credfile"  >"$tmpfile"
+    $GPG_BIN -d --no-tty --quiet < "$credfile"  >"$tmpfile"
   else
     echo "Unable to find '$credfile'. Creating new file."
   fi
