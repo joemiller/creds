@@ -156,7 +156,7 @@ cmd_edit() {
   fi
 
   orig_cksum=$(cksum "$tmpfile")
-  $EDITOR "$tmpfile"
+  ${EDITOR:-vi} "$tmpfile"
   new_cksum=$(cksum "$tmpfile")
   if [ "$orig_cksum" != "$new_cksum" ]; then
     echo "Encrypting..."
