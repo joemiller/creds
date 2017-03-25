@@ -5,6 +5,26 @@ creds
 
 Simple encrypted credential management with GPG.
 
+<!-- toc -->
+
+- [Rationale](#rationale)
+- [Requirements](#requirements)
+- [Install](#install)
+- [Uninstall](#uninstall)
+- [Usage](#usage)
+  * [Configuration](#configuration)
+  * [Creating a new credential store / Editing existing credential store](#creating-a-new-credential-store--editing-existing-credential-store)
+  * [Listing credential stores](#listing-credential-stores)
+  * [Setting/Loading](#settingloading)
+  * [Unsetting](#unsetting)
+  * [Importing an existing plaintext file](#importing-an-existing-plaintext-file)
+- [Troubleshooting](#troubleshooting)
+- [Developing & Testing](#developing--testing)
+- [TODO](#todo)
+- [Author](#author)
+
+<!-- tocstop -->
+
 Rationale
 ---------
 

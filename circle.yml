@@ -1,4 +1,6 @@
 machine:
+  services:
+    - docker
   environment:
     PATH: $HOME/.cabal/bin/:$PATH
 
