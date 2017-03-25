@@ -10,6 +10,7 @@ setup() {
 @test "calling a subcommand without required configuration vars returns an error" {
   unset CREDS_DIR GPG_KEY
   run $CREDS list
+  echo "$output"
   [ "$status" -eq 1 ]
   [ "${lines[0]}" = "Missing config var CREDS_DIR." ]
   [ "${lines[1]}" = "Missing config var GPG_KEY." ]
@@ -29,6 +30,7 @@ setup() {
   CREDS_DIR="/nonexist" \
     GPG_KEY="foo" \
     run $CREDS list
+  echo "$output"
   [ "$status" -eq 1 ]
   [[ "$output" == "CREDS_DIR '/nonexist' does not exist. Please create this directory." ]]
 }
