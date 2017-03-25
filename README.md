@@ -3,7 +3,7 @@ creds
 
 [![Circle CI](https://circleci.com/gh/joemiller/creds.svg?style=svg)](https://circleci.com/gh/joemiller/creds)
 
-Simple encrypted credential file management with GPG.
+Simple encrypted credential management with GPG.
 
 Rationale
 ---------
