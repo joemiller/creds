@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eou pipefail
+
 VERSION=0.0.3
 
 ## help constants
@@ -43,7 +45,7 @@ die() { exit 1; }
 usage() { echo_stderr "$USAGE"; die; }
 
 load_config_file() {
-  if [ -r "$HOME/.credsrc" ]; then
+  if [[ -r "$HOME/.credsrc" ]]; then
     # shellcheck source=/dev/null
     source "$HOME/.credsrc"
   fi
@@ -51,10 +53,10 @@ load_config_file() {
 
 check_config() {
   local valid_config=1
-  [ -z "$CREDS_DIR" ] && { echo_stderr "Missing config var CREDS_DIR."; valid_config=0; }
-  [ -z "$GPG_KEY" ]   && { echo_stderr "Missing config var GPG_KEY."; valid_config=0; }
+  [[ -z "${CREDS_DIR:-}" ]] && { echo_stderr "Missing config var CREDS_DIR."; valid_config=0; }
+  [[ -z "${GPG_KEY:-}" ]]   && { echo_stderr "Missing config var GPG_KEY."; valid_config=0; }
 
-  if [ "$valid_config" -eq "0" ]; then
+  if [[ "$valid_config" -eq "0" ]]; then
     echo_stderr "Create a ~/.credsrc file with the missing config vars."
     die
   fi
@@ -63,7 +65,7 @@ check_config() {
 check_gpg() {
   # if GPG_BIN is set in env or config file, verify it exists, else try to find the gpg binary, favoring
   # gpg2 if present.
-  if command_exists "$GPG_BIN"; then
+  if command_exists "${GPG_BIN:-}"; then
     GPG_BIN="$GPG_BIN"
   elif command_exists "gpg2"; then
     GPG_BIN="gpg2"
@@ -78,7 +80,7 @@ check_gpg() {
 check_deps() {
   check_gpg
 
-  if [ ! -d "$CREDS_DIR" ]; then
+  if [[ ! -d "$CREDS_DIR" ]]; then
     echo_stderr "CREDS_DIR '$CREDS_DIR' does not exist. Please create this directory."
     die
   fi
@@ -91,7 +93,7 @@ check_deps() {
 check_credfile() {
   local cred_name="$1"
   local credfile="$CREDS_DIR/$cred_name.gpg"
-  if [ ! -f "$credfile" ]; then
+  if [[ ! -f "$credfile" ]]; then
     echo_stderr "Unable to find '$credfile'"
     die
   fi
@@ -108,7 +110,7 @@ encrypt_file() {
 cmd_list() {
   echo "Credential storage dir: $CREDS_DIR"
   for i in "$CREDS_DIR"/*.gpg; do
-    [ ! -f "$i" ] && continue
+    [[ ! -f "$i" ]] && continue
     cred_name=$(basename "$i" .gpg)
     echo "- $cred_name"
   done
@@ -116,10 +118,10 @@ cmd_list() {
 
 cmd_set() {
   cred_name="$1"
-  [ -z "$cred_name" ] && { echo_stderr "$SET_USAGE"; die; }
+  [[ -z "$cred_name" ]] && { echo_stderr "$SET_USAGE"; die; }
 
   credfile=$(check_credfile "$cred_name")
-  [ -z "$credfile" ] && die
+  [[ -z "$credfile" ]] && die
 
   $GPG_BIN -d --no-tty --quiet < "$credfile" | while read -r line ; do
     if [[ "$line" =~ ^[^[:space:]]+= ]]; then
@@ -130,10 +132,10 @@ cmd_set() {
 
 cmd_unset() {
   cred_name="$1"
-  [ -z "$cred_name" ] && { echo_stderr "$UNSET_USAGE"; die; }
+  [[ -z "$cred_name" ]] && { echo_stderr "$UNSET_USAGE"; die; }
 
   credfile=$(check_credfile "$cred_name")
-  [ -z "$credfile" ] && die
+  [[ -z "$credfile" ]] && die
 
   $GPG_BIN -d --no-tty --quiet < "$credfile" | while read -r line ; do
     if [[ "$line" =~ ^[^[:space:]]+= ]]; then
@@ -145,7 +147,7 @@ cmd_unset() {
 
 cmd_edit() {
   cred_name="$1"
-  [ -z "$cred_name" ] && { echo_stderr "$EDIT_USAGE"; die; }
+  [[ -z "$cred_name" ]] && { echo_stderr "$EDIT_USAGE"; die; }
 
   credfile="$CREDS_DIR/$cred_name.gpg"
   tmpfile=$(mktemp "tmp-$cred_name.XXXXXXXX") || die
@@ -160,8 +162,7 @@ cmd_edit() {
   new_cksum=$(cksum "$tmpfile")
   if [ "$orig_cksum" != "$new_cksum" ]; then
     echo "Encrypting..."
-    encrypt_file "$tmpfile" "$credfile"
-    if [ $? != 0 ]; then
+    if ! encrypt_file "$tmpfile" "$credfile"; then
       echo_stderr "Encryption failed. Changes not committed."
       rm -f -- "$tmpfile"
       die
@@ -174,14 +175,14 @@ cmd_edit() {
 
 cmd_import() {
   unencrypted_file="$1"
-  [ -z "$unencrypted_file" ] && { echo_stderr "$IMPORT_USAGE"; die; }
+  [[ -z "$unencrypted_file" ]] && { echo_stderr "$IMPORT_USAGE"; die; }
 
   credfile=$(printf "%s/%s.gpg" "$CREDS_DIR" "$(basename "$unencrypted_file")")
-  if [ ! -e "$unencrypted_file" ]; then
+  if [[ ! -e "$unencrypted_file" ]]; then
     echo_stderr "File does not exist: '$unencrypted_file'"
     die
   fi
-  if [ -e "$credfile" ]; then
+  if [[ -e "$credfile" ]]; then
     echo_stderr "Credential store '$credfile' already exists."
     die
   fi
@@ -189,37 +190,40 @@ cmd_import() {
   encrypt_file "$unencrypted_file" "$credfile"
 }
 
-## main
-if [ "$#" -eq 0 ]; then
-  usage
-fi
+main() {
+  if [[ "$#" -eq 0 ]]; then
+      usage
+  fi
 
-subcommand="$1"
-shift
-case "$subcommand" in
-  -h|--help)
-    usage ;;
-  -v|--version)
-    echo $VERSION
-    exit ;;
-esac
+  subcommand="$1"
+  shift
+  case "$subcommand" in
+    -h|--help)
+      usage ;;
+    -v|--version)
+      echo $VERSION
+      exit ;;
+  esac
 
-load_config_file
-check_config
-check_deps
+  load_config_file
+  check_config
+  check_deps
 
-case "$subcommand" in
-  list)
-    cmd_list "$@" ;;
-  set)
-    cmd_set "$@" ;;
-  unset)
-    cmd_unset "$@" ;;
-  edit)
-    cmd_edit "$@" ;;
-  import)
-    cmd_import "$@" ;;
-  *)
-    echo "error: invalid argument or subcommand: $subcommand"
-    usage ;;
-esac
+  case "$subcommand" in
+    list)
+      cmd_list "$@" ;;
+    set)
+      cmd_set "$@" ;;
+    unset)
+      cmd_unset "$@" ;;
+    edit)
+      cmd_edit "$@" ;;
+    import)
+      cmd_import "$@" ;;
+    *)
+      echo "error: invalid argument or subcommand: $subcommand"
+      usage ;;
+  esac
+}
+
+main "$@"
