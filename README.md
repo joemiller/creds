@@ -16,6 +16,7 @@ Simple encrypted credential management with GPG.
   * [Creating a new credential store / Editing existing credential store](#creating-a-new-credential-store--editing-existing-credential-store)
   * [Listing credential stores](#listing-credential-stores)
   * [Setting/Loading](#settingloading)
+  * [Running a command with environment vars from a credential store](#running-a-command-with-environment-vars-from-a-credential-store)
   * [Unsetting](#unsetting)
   * [Importing an existing plaintext file](#importing-an-existing-plaintext-file)
 - [Troubleshooting](#troubleshooting)
@@ -177,9 +178,16 @@ environment.
 $ creds set aws-work
  export AWS_ACCESS_KEY_ID=foo
  export AWS_SECRET_ACCESS_KEY=bar
+```
 
+You can then copy and paste to set these vars in your current shell or do it
+in one comand:
+
+```
 $ eval "$(creds set aws-work)"
+```
 
+```
 $ echo $AWS_ACCESS_KEY_ID
 foo
 ```
@@ -189,6 +197,24 @@ whitespace character. If you're using zsh or bash as your shell and `HISTCONTROL
 env var contains `ignorespace` this will prevent the export statements (and your
 secrets) from being stored in the command history. This is the default setting
 in bash and zsh so it's probably already set correctly.
+
+### Running a command with environment vars from a credential store
+
+Use the `run` command to load environment vars from a credential store and
+execute a command with that environment.
+
+Environment vars are added to the current environment so existing vars will
+also be available to the command.
+
+```
+$ creds run aws-work env | grep AWS
+AWS_ACCESS_KEY_ID=foo
+AWS_SECRET_ACCESS_KEY=bar
+
+$ creds run aws-work s3cmd ls s3://some-bucket
+```
+
+Similar to, and inspired by, the excellent [envchain](https://github.com/sorah/envchain) util.
 
 ### Unsetting
 
