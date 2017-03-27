@@ -7,7 +7,7 @@ VERSION=0.0.4
 ## help constants
 USAGE="usage: creds [-h|--help] [-v|--version] <subcommand> [arguments]
 
-Simple encrypted credential file management with GPG.
+Simple encrypted credential management with GPG.
 
 The most commonly used subcommands are:
 
