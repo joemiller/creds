@@ -20,15 +20,16 @@ case $state in
       "edit[Edit a credential store]" \
       "import[Import an existing file into a new credential store]" \
       "set[Display commands to set credentials from a credential store]" \
-      "unset[Display commands to unset credentials from a credential store]"
+      "unset[Display commands to unset credentials from a credential store]" \
+      "run[Run a command with environment vars from a credential store]"
 		ret=0
 		;;
 	args)
 		case $line[1] in
 			help)
-				_values 'list' 'edit' 'import' 'set' 'unset' && ret=0
+				_values 'list' 'edit' 'import' 'set' 'unset' 'run' && ret=0
 				;;
-      edit|set|unset)
+      edit|set|unset|run)
         _values "available cred stores" $(_creds_list_cred_stores) && ret=0
         ;;
       list)
