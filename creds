@@ -7,7 +7,7 @@ VERSION=0.0.4
 ## help constants
 USAGE="usage: creds [-h|--help] [-v|--version] <subcommand> [arguments]
 
-Simple encrypted credential file management with GPG.
+Simple encrypted credential management with GPG.
 
 The most commonly used subcommands are:
 
@@ -16,6 +16,7 @@ The most commonly used subcommands are:
   import                Import an existing file into a new credential store
   set                   Display commands to set credentials from a credential store
   unset                 Display commands to unset credentials from a credential store
+  run                   Run a command with environment vars from a credential store
 "
 
 EDIT_USAGE="usage: creds edit [creds-store]
@@ -38,9 +39,14 @@ UNSET_USAGE="usage: creds unset [creds-store]
 display commands to unset credentials from a credential store
 "
 
+RUN_USAGE="usage: creds run [creds-store] [command] [args...]
+
+Set environment from the creds-store and run the command
+"
+
 ## helpers
 echo_stderr() { echo "$@" 1>&2; }
-command_exists() { type -P "$1" >/dev/null; }
+command_exists() { type -P "${1:-}">/dev/null; }
 die() { exit 1; }
 usage() { echo_stderr "$USAGE"; die; }
 
@@ -91,7 +97,7 @@ check_deps() {
 }
 
 check_credfile() {
-  local cred_name="$1"
+  local cred_name="${1:-}"
   local credfile="$CREDS_DIR/$cred_name.gpg"
   if [[ ! -f "$credfile" ]]; then
     echo_stderr "Unable to find '$credfile'"
@@ -101,8 +107,8 @@ check_credfile() {
 }
 
 encrypt_file() {
-  local infile="$1"
-  local outfile="$2"
+  local infile="${1:-}"
+  local outfile="${2:-}"
   $GPG_BIN -e --batch --yes --quiet -a -r "$GPG_KEY" -o "$outfile" < "$infile"
 }
 
@@ -117,7 +123,7 @@ cmd_list() {
 }
 
 cmd_set() {
-  cred_name="$1"
+  cred_name="${1:-}"
   [[ -z "$cred_name" ]] && { echo_stderr "$SET_USAGE"; die; }
 
   credfile=$(check_credfile "$cred_name")
@@ -131,7 +137,7 @@ cmd_set() {
 }
 
 cmd_unset() {
-  cred_name="$1"
+  cred_name="${1:-}"
   [[ -z "$cred_name" ]] && { echo_stderr "$UNSET_USAGE"; die; }
 
   credfile=$(check_credfile "$cred_name")
@@ -146,7 +152,7 @@ cmd_unset() {
 }
 
 cmd_edit() {
-  cred_name="$1"
+  cred_name="${1:-}"
   [[ -z "$cred_name" ]] && { echo_stderr "$EDIT_USAGE"; die; }
 
   credfile="$CREDS_DIR/$cred_name.gpg"
@@ -174,7 +180,7 @@ cmd_edit() {
 }
 
 cmd_import() {
-  unencrypted_file="$1"
+  unencrypted_file="${1:-}"
   [[ -z "$unencrypted_file" ]] && { echo_stderr "$IMPORT_USAGE"; die; }
 
   credfile=$(printf "%s/%s.gpg" "$CREDS_DIR" "$(basename "$unencrypted_file")")
@@ -190,12 +196,28 @@ cmd_import() {
   encrypt_file "$unencrypted_file" "$credfile"
 }
 
+cmd_run() {
+  [[ "$#" -lt 2 ]] && { echo_stderr "$RUN_USAGE"; die; }
+  cred_name="${1:-}"
+  shift
+
+  credfile=$(check_credfile "$cred_name")
+  [[ -z "$credfile" ]] && die
+
+  while read -r line; do
+    if [[ "$line" =~ ^[^[:space:]]+= ]]; then
+      eval "export $line"
+    fi
+  done < <( $GPG_BIN -d --no-tty --quiet < "$credfile")
+  exec "$@"
+}
+
 main() {
   if [[ "$#" -eq 0 ]]; then
       usage
   fi
 
-  subcommand="$1"
+  subcommand="${1:-}"
   shift
   case "$subcommand" in
     -h|--help)
@@ -220,6 +242,8 @@ main() {
       cmd_edit "$@" ;;
     import)
       cmd_import "$@" ;;
+    run)
+      cmd_run "$@" ;;
     *)
       echo "error: invalid argument or subcommand: $subcommand"
       usage ;;

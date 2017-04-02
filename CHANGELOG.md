@@ -1,3 +1,8 @@
+## UNRELEASED (???) probably 0.1.0
+
+  * Added `creds run` command. Run a command with environment vars loaded from
+    a credential store.
+
 ## 0.0.4 (March 25, 2017)
 
   * `creds set` output now prefixes each line with a single whitespace in order
