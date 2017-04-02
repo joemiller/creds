@@ -1,7 +1,8 @@
-## UNRELEASED (???) probably 0.1.0
+## 0.1.0 (April 2, 2017)
 
   * Added `creds run` command. Run a command with environment vars loaded from
     a credential store.
+  * Documented integration with [direnv](https://direnv.net/)
 
 ## 0.0.4 (March 25, 2017)
 
