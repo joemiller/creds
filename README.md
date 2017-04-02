@@ -19,6 +19,7 @@ Simple encrypted credential management with GPG.
   * [Running a command with environment vars from a credential store](#running-a-command-with-environment-vars-from-a-credential-store)
   * [Unsetting](#unsetting)
   * [Importing an existing plaintext file](#importing-an-existing-plaintext-file)
+  * [Integration with direnv](#integration-with-direnv)
 - [Troubleshooting](#troubleshooting)
 - [Developing & Testing](#developing--testing)
 - [TODO](#todo)
@@ -237,6 +238,33 @@ CIRCLE_TOKEN=foo
 $ creds import ./circleci.keys
 Encrypting './circleci.keys' to '/Users/joe/Dropbox/creds/circleci.keys.gpg'
 ```
+
+### Integration with direnv
+
+creds is a great companion to [direnv](https://direnv.net/).
+
+Place one or more eval statements in your `.envrc` file:
+
+```
+$ mkdir some-aws-project
+$ echo 'eval "$(creds set aws-personal)"' >some-aws-project/.envrc
+
+$ cd some-aws-project
+direnv: loading .envrc
+direnv: export +AMAZON_ACCESS_KEY_ID +AMAZON_SECRET_KEY_ID
+
+$ echo $AMAZON_ACCESS_KEY_ID
+ABCDEFGHIJKLMNOP
+
+$ cd ..
+direnv: unloading
+
+$ echo $AMAZON_ACCESS_KEY_ID
+$
+```
+
+direnv is able to follow all of the env vars set by creds so when you leave
+the directory they will be automatically unloaded.
 
 Troubleshooting
 ---------------
